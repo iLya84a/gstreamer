@@ -45,7 +45,7 @@ plugin_init (GstPlugin * plugin)
 #define GST_PACKAGE_ORIGIN "Unknown package origin"
 #define GST_LICENSE        "LGPL"
 #define PACKAGE            "gst-plugins-bad (qmake)"
-#define PACKAGE_VERSION    "1.13.0.1"
+#define PACKAGE_VERSION    "1.24.9"
 #endif
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,

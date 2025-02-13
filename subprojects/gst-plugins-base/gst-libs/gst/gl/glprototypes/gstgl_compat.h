@@ -37,7 +37,7 @@ typedef ptrdiff_t GLsizeiptr;
 typedef ptrdiff_t GLintptr;
 #endif
 #if !GST_GL_HAVE_GLSYNC
-typedef gpointer GLsync;
+//typedef gpointer GLsync;
 #endif
 #if !GST_GL_HAVE_GLUINT64
 typedef guint64 GLuint64;

@@ -6,7 +6,7 @@ QT += qml quick gui
 
 win32:!defined(packagesExist, test) {
     # Change this to your gstreamer SDK installation path
-    GSTREAMER_PATH=C:/gstreamer/1.0/x86
+    GSTREAMER_PATH=C:\gstreamer\1.0\msvc_x86_64
 
     # pkgconfig dependencies: gstreamer-1.0, gstreamer-video-1.0, gstreamer-gl-1.0
     
@@ -54,8 +54,9 @@ win32:!defined(packagesExist, test) {
             $${GOBJECT_2_0_LIBS} \
             $${GSTREAMER_BASE_1_0_LIBS}
 } else {
-    QT_CONFIG -= no-pkg-config
-    CONFIG += link_pkgconfig debug
+#    QT_CONFIG -= no-pkg-config
+   # CONFIG += link_pkgconfig debug
+    CONFIG += link_pkgconfig
     PKGCONFIG = \
         gstreamer-1.0 \
         gstreamer-video-1.0 \

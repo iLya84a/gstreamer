@@ -24,6 +24,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include <iostream>
 
 #include <gst/video/video.h>
 #include <gst/gl/gl.h>
@@ -108,6 +109,7 @@ public:
       case GST_VIDEO_FORMAT_RGB:
       case GST_VIDEO_FORMAT_RGBA:
       case GST_VIDEO_FORMAT_BGRA:
+      case GST_VIDEO_FORMAT_GRAY8:
         tex_names[0] = UNIFORM_TEXTURE0_NAME;
         break;
       case GST_VIDEO_FORMAT_YV12:
@@ -187,6 +189,24 @@ DEFINE_MATERIAL(RGBA);
 DEFINE_MATERIAL(RGBA_SWIZZLE);
 DEFINE_MATERIAL(YUV_TRIPLANAR);
 
+class GstQSGMaterial_GRAY8 : public GstQSGMaterial
+{
+public:
+    GstQSGMaterial_GRAY8()
+        : GstQSGMaterial()
+    {
+    }
+
+    virtual ~GstQSGMaterial_GRAY8()
+    {
+    }
+
+    QSGMaterialType *type() const override
+    {
+        static QSGMaterialType type; return &type;
+    }
+};
+
 GstQSGMaterial *
 GstQSGMaterial::new_for_format(GstVideoFormat format)
 {
@@ -198,6 +218,8 @@ GstQSGMaterial::new_for_format(GstVideoFormat format)
       return static_cast<GstQSGMaterial *>(new GstQSGMaterial_RGBA_SWIZZLE());
     case GST_VIDEO_FORMAT_YV12:
       return static_cast<GstQSGMaterial *>(new GstQSGMaterial_YUV_TRIPLANAR());
+    case GST_VIDEO_FORMAT_GRAY8:
+      return static_cast<GstQSGMaterial *>(new GstQSGMaterial_GRAY8());
     default:
       g_assert_not_reached ();
   }
@@ -325,6 +347,17 @@ fragmentShaderForFormat(GstVideoFormat v_format, GstGLContext * context)
       g_clear_pointer (&yuv_to_rgb, g_free);
       g_clear_pointer (&swizzle, g_free);
       return ret;
+    }
+    case GST_VIDEO_FORMAT_GRAY8: {
+        char *swizzle = gst_gl_color_convert_swizzle_shader_string (context);
+        char *ret = g_strdup_printf (texcoord_input single_texture_input uniform_opacity
+                                    "%s\n"
+                                    "void main(void) {\n"
+                                    "  vec4 p = vec4(vec3(texture2D(tex, v_texcoord).r), 1.0);\n"
+                                    "  gl_FragColor = p * " UNIFORM_OPACITY_NAME ";\n"
+                                    "}\n", swizzle);
+        g_clear_pointer (&swizzle, g_free);
+        return ret;
     }
     default:
       return NULL;
@@ -515,6 +548,7 @@ out:
           case GST_VIDEO_FORMAT_RGBA:
           case GST_VIDEO_FORMAT_BGRA:
           case GST_VIDEO_FORMAT_RGB:
+          case GST_VIDEO_FORMAT_GRAY8:
             for (gsize j = 0; j < tex_sidelength; j++) {
               for (gsize k = 0; k < tex_sidelength; k++) {
                 data[(j * tex_sidelength + k) * 4 + 3] = 0xFF; // opaque
