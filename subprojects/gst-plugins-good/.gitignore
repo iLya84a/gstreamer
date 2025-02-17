@@ -8,6 +8,7 @@ Build
 *.sdf
 *.opensdf
 *.DS_Store
+/ext/build*
 
 # Meson
 /build
