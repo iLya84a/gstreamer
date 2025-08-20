@@ -95,6 +95,8 @@ static void gst_nv_h264_enc_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec);
 static void gst_nv_h264_enc_finalize (GObject * obj);
 
+#define GST_NV_H264_ENC(object) ((GstNvH264Enc *) (object))
+
 static void
 gst_nv_h264_enc_class_init (GstNvH264EncClass * klass, gpointer data)
 {
@@ -283,6 +285,9 @@ gst_nv_h264_enc_init (GstNvH264Enc * nvenc)
 static void
 gst_nv_h264_enc_finalize (GObject * obj)
 {
+  GstNvH264Enc *self = GST_NV_H264_ENC (obj);
+  GST_DEBUG_OBJECT (self, "Finalize");
+
   G_OBJECT_CLASS (parent_class)->finalize (obj);
 }
 
@@ -290,6 +295,7 @@ static gboolean
 gst_nv_h264_enc_open (GstVideoEncoder * enc)
 {
   GstNvBaseEnc *base = GST_NV_BASE_ENC (enc);
+  GST_DEBUG_OBJECT (base, "Open");
 
   if (!GST_VIDEO_ENCODER_CLASS (parent_class)->open (enc))
     return FALSE;
@@ -318,6 +324,9 @@ gst_nv_h264_enc_open (GstVideoEncoder * enc)
 static gboolean
 gst_nv_h264_enc_close (GstVideoEncoder * enc)
 {
+  GstNvH264Enc *self = GST_NV_H264_ENC (enc);
+  GST_DEBUG_OBJECT (self, "Close");
+
   return GST_VIDEO_ENCODER_CLASS (parent_class)->close (enc);
 }
 

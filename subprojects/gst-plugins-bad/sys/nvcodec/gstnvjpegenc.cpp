@@ -326,6 +326,7 @@ static void
 gst_nv_jpeg_enc_finalize (GObject * object)
 {
   auto self = GST_NV_JPEG_ENC (object);
+  GST_DEBUG_OBJECT (self, "Finalize");
 
   delete self->priv;
 
@@ -524,6 +525,8 @@ gst_nv_jpeg_enc_stop (GstVideoEncoder * encoder)
 {
   auto self = GST_NV_JPEG_ENC (encoder);
 
+  GST_DEBUG_OBJECT (self, "Stop");
+
   gst_nv_jpeg_enc_reset (self);
 
   return TRUE;
@@ -665,6 +668,8 @@ gst_nv_jpeg_enc_set_format (GstVideoEncoder * encoder,
 {
   auto self = GST_NV_JPEG_ENC (encoder);
   auto priv = self->priv;
+
+  GST_DEBUG_OBJECT (self, "Set format");
 
   priv->info = state->info;
 

@@ -270,6 +270,10 @@ gst_cuda_allocator_update_info (const GstVideoInfo * reference,
       ret.stride[0] = pitch;
       ret.offset[0] = 0;
       break;
+	case GST_VIDEO_FORMAT_GRAY8:
+      ret.stride[0] = pitch;
+      ret.offset[0] = 0;
+      break;
     default:
       return FALSE;
   }
