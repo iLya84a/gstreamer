@@ -117,6 +117,7 @@ GST_STATIC_PAD_TEMPLATE ("sink",
 #define DEFAULT_FORCE_ASPECT_RATIO  TRUE
 #define DEFAULT_PAR_N               0
 #define DEFAULT_PAR_D               1
+#define DEFAULT_EMIT_SIGNALS   FALSE
 
 enum
 {
@@ -124,6 +125,7 @@ enum
   PROP_WIDGET,
   PROP_FORCE_ASPECT_RATIO,
   PROP_PIXEL_ASPECT_RATIO,
+  PROP_EMIT_SIGNALS
 };
 
 enum
@@ -179,6 +181,12 @@ gst_qt_sink_class_init (GstQtSinkClass * klass)
           G_MAXINT, 1, 1, 1,
           (GParamFlags) (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 
+  g_object_class_install_property (gobject_class, PROP_EMIT_SIGNALS,
+      g_param_spec_boolean ("emit-signals", "Emit signals",
+          "Emit fpsChanged signal",
+          DEFAULT_EMIT_SIGNALS,
+          (GParamFlags) (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
+
   gst_element_class_add_static_pad_template (gstelement_class, &gst_qt_sink_template);
 
   gobject_class->finalize = gst_qt_sink_finalize;
@@ -229,6 +237,9 @@ gst_qt_sink_set_property (GObject * object, guint prop_id,
       qt_sink->widget->setDAR (gst_value_get_fraction_numerator (value),
           gst_value_get_fraction_denominator (value));
       break;
+    case PROP_EMIT_SIGNALS:
+        qt_sink->widget->setEmitSignals (value);
+        break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -296,6 +307,9 @@ gst_qt_sink_get_property (GObject * object, guint prop_id,
       } else {
         gst_value_set_fraction (value, DEFAULT_PAR_N, DEFAULT_PAR_D);
       }
+      break;
+    case PROP_EMIT_SIGNALS:
+      g_value_set_boolean (value, qt_sink->widget->getEmitSignals ());
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);

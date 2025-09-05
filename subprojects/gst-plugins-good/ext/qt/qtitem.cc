@@ -48,6 +48,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define DEFAULT_FORCE_ASPECT_RATIO  TRUE
 #define DEFAULT_PAR_N               0
 #define DEFAULT_PAR_D               1
+#define DEFAULT_EMIT_SIGNALS   FALSE
 
 enum
 {
@@ -62,7 +63,9 @@ struct _QtGLVideoItemPrivate
 
   /* properties */
   gboolean force_aspect_ratio;
+  gboolean emit_signals;
   gint par_n, par_d;
+  int fps;
 
   GWeakRef sink;
 
@@ -105,8 +108,12 @@ QtGLVideoItem::QtGLVideoItem()
   this->priv = g_new0 (QtGLVideoItemPrivate, 1);
 
   this->priv->force_aspect_ratio = DEFAULT_FORCE_ASPECT_RATIO;
+  this->priv->emit_signals = DEFAULT_EMIT_SIGNALS;
   this->priv->par_n = DEFAULT_PAR_N;
   this->priv->par_d = DEFAULT_PAR_D;
+  this->priv->fps = 0;
+
+  this->priv->buffer = nullptr;
 
   this->priv->initted = FALSE;
 
@@ -204,10 +211,34 @@ QtGLVideoItem::getForceAspectRatio()
   return this->priv->force_aspect_ratio;
 }
 
+void
+QtGLVideoItem::setEmitSignals(bool emit_signals)
+{
+    this->priv->emit_signals = emit_signals;
+
+    emit emitSignalsChanged(emit_signals);
+}
+
+bool
+QtGLVideoItem::getEmitSignals()
+{
+    return this->priv->emit_signals;
+}
+
 bool
 QtGLVideoItem::itemInitialized()
 {
   return this->priv->initted;
+}
+
+void QtGLVideoItem::setFps(double fps)
+{
+    emit fpsChanged(fps);
+}
+
+double QtGLVideoItem::fps()
+{
+    return this->priv->fps;
 }
 
 static gboolean
@@ -696,8 +727,22 @@ QtGLVideoItemInterface::setBuffer (GstBuffer * buffer)
     }
   }
 
-  gst_buffer_replace (&qt_item->priv->buffer, buffer);
+  GstClockTime prev_ts = GST_CLOCK_TIME_NONE;
+  if (qt_item->priv->buffer)
+      prev_ts = GST_BUFFER_TIMESTAMP (qt_item->priv->buffer);
 
+  auto wasDifferent = gst_buffer_replace (&qt_item->priv->buffer, buffer);
+
+  // Ensure that all buffers are valid and not identical.
+  if (GST_CLOCK_TIME_IS_VALID(prev_ts) && wasDifferent && buffer) {
+      GstClockTimeDiff diff = GST_BUFFER_TIMESTAMP (buffer) - prev_ts;
+      if (diff != 0) {
+          gdouble fps = (gdouble) GST_SECOND / diff;
+          qt_item->priv->fps = fps;
+          if (qt_item->priv->emit_signals)
+              emit qt_item->fpsChanged(fps);
+      }
+  }
   QMetaObject::invokeMethod(qt_item, "update", Qt::QueuedConnection);
 
   g_mutex_unlock (&qt_item->priv->lock);
@@ -909,6 +954,23 @@ QtGLVideoItemInterface::getForceAspectRatio()
   if (!qt_item)
     return FALSE;
   return qt_item->getForceAspectRatio();
+}
+
+void QtGLVideoItemInterface::setEmitSignals(bool emit_signals)
+{
+    QMutexLocker locker(&lock);
+    if (!qt_item)
+        return;
+    qt_item->setEmitSignals(emit_signals);
+}
+
+bool
+QtGLVideoItemInterface::getEmitSignals()
+{
+    QMutexLocker locker(&lock);
+    if (!qt_item)
+        return FALSE;
+    return qt_item->getEmitSignals();
 }
 
 void

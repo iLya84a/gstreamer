@@ -55,8 +55,8 @@ win32:!defined(packagesExist, test) {
             $${GSTREAMER_BASE_1_0_LIBS}
 } else {
 #    QT_CONFIG -= no-pkg-config
-   CONFIG += link_pkgconfig debug
-    # CONFIG += link_pkgconfig
+   # CONFIG += link_pkgconfig debug
+    CONFIG += link_pkgconfig
     PKGCONFIG = \
         gstreamer-1.0 \
         gstreamer-video-1.0 \

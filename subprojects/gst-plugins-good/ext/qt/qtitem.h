@@ -55,6 +55,8 @@ public:
     void getDAR(gint *, gint *);
     void setForceAspectRatio(bool);
     bool getForceAspectRatio();
+    void setEmitSignals(bool);
+    bool getEmitSignals();
 private:
     QtGLVideoItem *qt_item;
     QMutex lock;
@@ -71,6 +73,13 @@ class QtGLVideoItem : public QQuickItem, protected QOpenGLFunctions
                READ getForceAspectRatio
                WRITE setForceAspectRatio
                NOTIFY forceAspectRatioChanged)
+    Q_PROPERTY(double fps
+               READ fps
+               NOTIFY fpsChanged)
+    Q_PROPERTY(bool emitSignals
+               READ getEmitSignals
+               WRITE setEmitSignals
+               NOTIFY emitSignalsChanged)
 
 public:
     QtGLVideoItem();
@@ -80,7 +89,11 @@ public:
     void getDAR(gint *, gint *);
     void setForceAspectRatio(bool);
     bool getForceAspectRatio();
+    void setEmitSignals(bool);
+    bool getEmitSignals();
     bool itemInitialized();
+    void setFps(double fps);
+    double fps();
 
     QSharedPointer<QtGLVideoItemInterface> getInterface() { return proxy; };
     /* private for C interface ... */
@@ -89,6 +102,8 @@ public:
 Q_SIGNALS:
     void itemInitializedChanged();
     void forceAspectRatioChanged(bool);
+    void fpsChanged(int);
+    void emitSignalsChanged(bool);
 
 private Q_SLOTS:
     void handleWindowChanged(QQuickWindow * win);
